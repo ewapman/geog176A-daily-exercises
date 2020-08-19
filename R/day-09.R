@@ -7,10 +7,11 @@ usa_geom = data$geometry
 (ca_c_ml = st_combine(usa_geom) %>%
     st_cast("MULTILINESTRING"))
 
-plot(usa_geom)
+plot(ca_c_ml)
 
 
 usa_geom2 = data$geometry
 (ca_u_ml = st_union(usa_geom2)  %>%
     st_cast("MULTILINESTRING"))
 plot(usa_geom2)
+plot(ca_u_ml)
