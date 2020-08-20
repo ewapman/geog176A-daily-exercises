@@ -19,7 +19,7 @@ st_distance(cities_sf, which = "Euclidean")
 
 plot(cities_sf$geometry)
 # Equal Area Distance - change units to km and drop units
-st_distance(st_transform(cities_sf, 5070)) %>%
+st_distance(st_transform(cities5070)) %>%
   units::set_units("km") %>%
   units::drop_units()
 
