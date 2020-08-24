@@ -75,6 +75,8 @@ ggplot() +
   labs(title = "Ms_Simplify Map")
 
 ```
+
+
 **Number of Points in each geometry:**
 
 - Original Map: `r conuspts`
