@@ -1,0 +1,95 @@
+---
+title: "Daily Exercise 13"
+author: "Emily Wapman"
+output: html_document
+---
+
+```{r, warning = FALSE, message = FALSE}
+# Install rmapshaper
+library(rmapshaper)
+library(tidyverse)
+library(sf)
+```
+
+```{r, warning = FALSE, message = FALSE}
+
+# CONUS State Borders
+conus = USAboundaries::us_states() %>%
+  filter(!state_name %in% c("Puerto Rico", "Alaska", "Hawaii")) %>%
+  st_transform(5070)
+
+# Play with st_simplifiy
+
+conus100 = st_simplify(conus, dTolerance = 100) %>%
+  plot()
+
+conus1000 = st_simplify(conus, dTolerance = 1000) %>%
+  plot()
+
+conus1500 = st_simplify(conus, dTolerance = 1500) %>%
+  plot()
+
+conus10000 = st_simplify(conus, dTolerance = 10000) %>%
+  plot()
+
+conus100000 = st_simplify(conus, dTolerance = 100000) %>%
+  plot()
+
+# Play with ms_simplify 
+
+conus20 = ms_simplify(conus, keep = 0.2) %>%
+  plot()
+
+conus10 = ms_simplify(conus, keep = 0.1) %>%
+  plot()
+
+conus15 = ms_simplify(conus, keep = 0.15) %>%
+  plot()
+
+conus5 = ms_simplify(conus, keep = 0.05) %>%
+  plot()
+
+conus1 = ms_simplify(conus, keep = 0.01) %>%
+  plot()
+
+# Select desired parameters and find number of points in raw data
+
+simp_states_st = st_simplify(conus, dTolerance = 1000)
+simp_states_ms = ms_simplify(conus, keep = 0.1)
+
+conuspts = mapview::npts(conus)
+stpts = mapview::npts(simp_states_st)
+mspts = mapview::npts(simp_states_ms)
+
+
+ggplot() +
+  geom_sf(data = conus) +
+  labs(title = "Original Map")
+
+ggplot() +
+  geom_sf(data = simp_states_st) +
+  labs(title = "St_Simplify Map")
+
+ggplot() +
+  geom_sf(data = simp_states_ms) +
+  labs(title = "Ms_Simplify Map")
+
+```
+**Number of Points in each geometry:**
+
+- Original Map: `r conuspts`
+- St_Simplify Map: `r stpts`
+- Ms_Simplify Map: `r mspts`
+
+
+
+
+
+
+
+
+
+
+
+
+
