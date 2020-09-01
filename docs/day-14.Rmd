@@ -1,0 +1,49 @@
+---
+title: "Daily Exercise 14"
+author: "Emily Wapman"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(sf)
+library(USAboundaries)
+
+data_counties = USAboundaries::us_counties(resolution = "low") %>%
+  filter(!state_name %in% c("Puerto Rico", "Alaska", "Hawaii"))
+
+cities = read_csv("~/github/geog-176A-labs/data/uscities.csv") %>%
+  st_as_sf(coords = c("lng", "lat"), crs = 4326) 
+
+
+point_in_polygon = function(points, polygon, id){
+
+      st_join(polygon, points) %>%
+
+        st_drop_geometry() %>%
+
+        count(.data[[id]]) %>%
+
+        setNames(c(id, "n")) %>%
+
+        left_join(polygon, by = id) %>%
+
+        st_as_sf()}
+
+plot_pip = function(data){
+  ggplot() + 
+    geom_sf(data = data, aes(fill = log(n)), alpha = .9, size = .2) + 
+    scale_fill_gradient(low = "white", high = "darkgreen") + 
+    theme_void() + 
+    theme(legend.position = 'none',
+          plot.title = element_text(face = "bold", color = "darkgreen", hjust = .5, size = 24)) +
+    labs(title = "Starbucks Locations",
+         caption = paste0(sum(data$n), " locations represented"))}
+
+gg = point_in_polygon(cities, data_counties, "geoid") %>% 
+plot_pip() +
+  labs(title = "Number of Cities in Each US County") +
+  scale_fill_gradient(low = "white", high = "darkblue") +
+  theme(plot.title = element_text(color = "black"))
+
+ggsave(gg, file = "~/github/geog176A-daily-exercises/img/exercise14.png")
+```

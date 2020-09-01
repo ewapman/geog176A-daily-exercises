@@ -1,0 +1,48 @@
+---
+title: "Daily Exercise 16"
+author: "Emily Wapman"
+output: html_document
+---
+```{r, warning = FALSE, message = FALSE}
+
+library(tidyverse)
+library(sf)
+library(rmapshaper)
+library(leaflet)
+library(leafpop)
+library(readxl)
+
+NID2019_U <- read_excel("../data/NID2019_U.xlsx") 
+
+dams_sf = NID2019_U %>%
+  filter(!is.na(LONGITUDE), !is.na(LATITUDE)) %>%
+  st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = 4326) %>%
+  st_transform(5070)
+  
+  # Download Shape File (Rivers)/Filter to Mississippi System
+
+rivers = read_sf('../data/majorrivers_0_0/MajorRivers.shp')
+
+
+rivers = rivers %>%
+  filter(SYSTEM == "Mississippi")
+
+# Filter to the largest/high hazard dam in each state
+
+dams_sf_biggest = dams_sf %>%
+  filter(HAZARD == "H", grepl("C", PURPOSES)) %>%
+  group_by(STATE) %>%
+  slice_max(NID_STORAGE) %>%
+  select("DAM_NAME", "NID_STORAGE", "PURPOSES", "YEAR_COMPLETED")
+
+
+# Make Leaflet
+
+leaflet() %>%
+  addProviderTiles(providers$CartoDB) %>%
+  addPolylines(data = rivers) %>%
+  addCircleMarkers(data = st_transform(dams_sf_biggest, 4326), fillOpacity = 1, radius = ~NID_STORAGE/1500000, color = "red", stroke = FALSE, popup = leafpop::popupTable(st_drop_geometry(dams_sf_biggest), feature.id = FALSE, row.numbers = FALSE))
+```
+ 
+  
+
