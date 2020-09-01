@@ -30,4 +30,6 @@ elevation = get_elev_raster(cities_sf, z = 13) %>%
   plot()
 
 ```
+
+
 This raster shows the elevation of Goleta, California. The bbox values indicate the x min and max and range from -2145000 to -2160000 on this scale and the y values range from 1532000 to 1540000. The z value indicates the zoom above this plane, which was set at 13, and the scale on the right indicates the elevation in meters. 
