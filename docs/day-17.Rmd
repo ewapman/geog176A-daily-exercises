@@ -29,7 +29,58 @@ elevation = get_elev_raster(cities_sf, z = 13) %>%
   crop(cities_sf) %>%
   plot()
 
+writeRaster(elevation, filename = "data/goleta-elev.tif", overwrite = TRUE)
+
 ```
 
 
 This raster shows the elevation of Goleta, California. The bbox values indicate the x min and max and range from -2145000 to -2160000 on this scale and the y values range from 1532000 to 1540000. The z value indicates the zoom above this plane, which was set at 13, and the scale on the right indicates the elevation in meters. 
+
+# Day 18
+```{r}
+FUN = function(x){ifelse(x > 0, 1, NA)}
+
+elevation2 = calc(elevation, FUN)
+plot(elevation2, col = c("red", "blue"))
+
+land = elevation2 * elevation
+plot(land)
+
+quarts = cellStats(elevation2, fivenum)
+
+rcl = 
+
+
+```
+```{r}
+bb = read_csv("~/github/geog176A-daily-exercises/data/uscities.csv") %>%
+  st_as_sf(coords = c("lng", "lat"), crs = 4326) %>% 
+  filter(city == "Goleta") %>% 
+  st_transform(5070) %>% 
+  st_buffer(5000) %>% 
+  st_bbox() %>% 
+  st_as_sfc() %>% 
+  st_as_sf()
+
+elev = elevatr::get_elev_raster(bb, z = 11) %>% crop(bb)
+writeRaster(elev, filename = "~/github/geog176A-daily-exercises/data/goleta-elev.tif", overwrite = TRUE)
+
+r = raster("~/github/geog176A-daily-exercises/data/goleta-elev.tif")
+
+FUN2 = function(x) {ifelse(x <= 0 , NA, 1)}
+
+mask = calc(r, FUN2)
+
+land = mask * r
+plot(land, col = viridis::viridis(256))
+
+# Reclassify 
+rcl = data.frame(min = seq(0, 500, 100), max = seq(100, 600, 100), lab = c(0:5))
+
+raster_reclassify = reclassify(land, rcl, lowerTRUE = TRUE)
+
+stack = stack(r, mask, land, raster_reclassify) %>%
+  setNames(c("elevation", "land", "terrain", "topography"))
+
+plot(stack, col = viridis::viridis(256))
+```
