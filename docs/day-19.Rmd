@@ -1,42 +1,19 @@
 ---
-title: "Daily Exercise 17"
+title: "Daily Exercise 19"
 author: "Emily Wapman"
 output: html_document
 ---
 
-```{r, message = FALSE, warning = FALSE}
+```{r, warning = FALSE, message = FALSE}
 library(elevatr)
 library(tidyverse)
 library(sf)
 library(raster)
 library(rgdal)
+library(osmdata)
+library(dplyr)
+library(leaflet)
 
-# Read in Cities Data
-cities = read_csv("~/github/geog176A-daily-exercises/data/uscities.csv") %>%
-  st_as_sf(coords = c("lng", "lat"), crs = 4326) %>%
-  filter(city == "Goleta") %>%
-  st_transform(5070) %>%
-  st_buffer(5000)
-
-# Get Bounding Box and make sf object
-cities_bb = st_bbox(cities) 
-
-cities_sf = cities_bb %>%
-  st_as_sfc() %>%
-  st_as_sf()
-
-elevation = get_elev_raster(cities_sf, z = 13) %>%
-  crop(cities_sf) %>%
-  plot()
-
-writeRaster(elevation, filename = "data/goleta-elev.tif", overwrite = TRUE)
-
-```
-
-
-This raster shows the elevation of Goleta, California. The bbox values indicate the x min and max and range from -2145000 to -2160000 on this scale and the y values range from 1532000 to 1540000. The z value indicates the zoom above this plane, which was set at 13, and the scale on the right indicates the elevation in meters. 
-
-```{r}
 bb = read_csv("~/github/geog176A-daily-exercises/data/uscities.csv") %>%
   st_as_sf(coords = c("lng", "lat"), crs = 4326) %>% 
   filter(city == "Goleta") %>% 
@@ -67,4 +44,34 @@ stack = stack(r, mask, land, raster_reclassify) %>%
   setNames(c("elevation", "land", "terrain", "topography"))
 
 plot(stack, col = viridis::viridis(256))
+
+```
+
+# Day 19
+```{r, warning = FALSE, message = FALSE}
+bb2 = st_bbox(stack) %>%
+  st_as_sfc() %>%
+  st_transform(4326)
+ 
+osm = osmdata::opq(bb2) %>%
+  add_osm_feature(key = 'amenity', value = "restaurant") %>%
+  osmdata_sf() 
+
+restaurant = osm$osm_points 
+
+elevation = raster::extract(r, restaurant)
+
+restaurant_plot = restaurant %>%
+  mutate(elevation = elevation) %>% 
+  dplyr::select(osm_id, name, amenity, elevation) %>%
+  dplyr::filter(!is.na(name)) 
+
+
+leaflet() %>%
+  addTiles() %>%
+  addMarkers(data = restaurant_plot, popup = ~as.character(elevation), label = ~name)
+  
+  
+  
+
 ```
