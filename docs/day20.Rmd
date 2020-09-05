@@ -1,0 +1,64 @@
+---
+title: "Daily Exercise 20"
+author: "Emily Wapman"
+output: html_document
+---
+```{r, warning = FALSE, message = FALSE}
+library(elevatr)
+library(tidyverse)
+library(sf)
+library(raster)
+library(rgdal)
+library(climateR)
+library(USAboundaries)
+```
+
+```{r, warning = FALSE, message = FALSE}
+params = c("prcp","vp", "tmax")
+area_interest = USAboundaries::us_states() %>%
+  filter(state_name == "Montana")
+mon = climateR::getTerraClim(area_interest, params, startDate = "2018-01-01", endDate = "2018-01-31") %>%
+  stack() %>%
+  setNames(params)
+plot(mon)
+
+# Precipitation
+values_prcp = mon$prcp %>%
+  values()
+idx = which(!is.na(values_prcp))
+v = na.omit(values_prcp)
+vs = scale(v)
+
+E = kmeans(vs, 5, iter.max = 100)
+clus_raster = mon$tmax
+values(clus_raster) = NA
+clus_raster[idx] = E$cluster
+plot(clus_raster, col = RColorBrewer::brewer.pal(5, "Spectral"))
+
+# Vapor Pressure
+
+values_vp = mon$vp %>%
+  values()
+idx2 = which(!is.na(values_vp))
+v2 = na.omit(values_vp)
+vs2 = scale(v2)
+
+E2 = kmeans(vs2, 5, iter.max = 100)
+clus_raster2 = mon$tmax
+values(clus_raster2) = NA
+clus_raster2[idx] = E2$cluster
+plot(clus_raster2, col = RColorBrewer::brewer.pal(5, "Spectral"))
+
+# Temp. Max 
+values_tmax = mon$tmax %>%
+  values()
+idx3 = which(!is.na(values_tmax))
+v3 = na.omit(values_tmax)
+vs3 = scale(v3)
+
+E3 = kmeans(vs3, 5, iter.max = 100)
+clus_raster3 = mon$prcp
+values(clus_raster3) = NA
+clus_raster3[idx] = E3$cluster
+plot(clus_raster3, col = RColorBrewer::brewer.pal(5, "Spectral"))
+```

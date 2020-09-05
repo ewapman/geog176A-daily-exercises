@@ -71,7 +71,11 @@ leaflet() %>%
   addTiles() %>%
   addMarkers(data = restaurant_plot, popup = ~as.character(elevation), label = ~name)
   
-  
-  
+  osm = osmdata::opq(bbwgs) %>% 
+  add_osm_feature("building") %>%
+  osmdata_sf() 
+mapview(osm$osm_polygons)
+
+
 
 ```
