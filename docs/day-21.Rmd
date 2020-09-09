@@ -1,0 +1,58 @@
+---
+title: "Daily Exercise 21"
+author: "Emily Wapman"
+output: html_document
+---
+```{r, warning = FALSE, message = FALSE}
+library(elevatr)
+library(tidyverse)
+library(sf)
+library(raster)
+library(rgdal)
+library(climateR)
+library(whitebox)
+
+```
+
+```{r, warning = FALSE, message = FALSE}
+# Define AOI
+mo = AOI::aoi_get("Mount Saint Helens") %>%
+  AOI::aoi_buffer(0.5)
+
+```
+
+```{r, warning = FALSE, message = FALSE, eval = FALSE}
+# Get elevation raster
+elev  = elevatr::get_elev_raster(mo, z = 12) %>% 
+  crop(mo)
+
+# Write raster as tif
+writeRaster(elev, "../data/mount_sthelens-elev.tif", overwrite = TRUE)
+
+# Create hillshade raster
+wbt_hillshade("../data/mount_sthelens-elev.tif", "../data/mount_sthelens-hillshade.tif")
+
+# Create slope raster
+wbt_slope("../data/mount_sthelens-elev.tif", "../data/mount_sthelens-slope.tif")
+
+# Create aspect raster
+wbt_aspect("../data/mount_sthelens-elev.tif", "../data/mount_sthelens-aspect.tif")
+```
+
+```{r, warning = FALSE, message = FALSE, eval = TRUE}
+# Elevation Plot
+elev_r = raster("../data/mount_sthelens-elev.tif")
+plot(elev_r, axes = FALSE, box = FALSE, col = viridis::viridis(256), main = "Elevation")
+
+# Slope Plot
+slope_r = raster("../data/mount_sthelens-slope.tif")
+plot(slope_r, axes = FALSE, box = FALSE, col = terrain.colors(256), main = "Slope")
+
+# Aspect Plot
+aspect_r = raster("../data/mount_sthelens-aspect.tif")
+plot(aspect_r, axes = FALSE, box = FALSE, col = rainbow(8), main = "Aspect")
+
+# Hillshade Plot
+hill_r = raster("../data/mount_sthelens-hillshade.tif")
+plot(hill_r, axes = FALSE, box = FALSE, col = gray.colors(256, alpha = 0.8), main = "Hillshade")
+```
